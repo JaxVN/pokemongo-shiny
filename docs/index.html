@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shiny / Lucky Dex</title>
+<meta name="description" content="Personal Pokémon GO shiny, lucky and collection checklist.">
+<meta name="theme-color" content="#0b0d12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23f1f3f7'/%3E%3Cpath d='M1 16a15 15 0 0 1 30 0z' fill='%23f0455a'/%3E%3Ccircle cx='16' cy='16' r='4.5' fill='%230b0d12'/%3E%3C/svg%3E">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #0b0d12; color: #e8ecf4; font-family: 'Space Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #4cc9f0; text-decoration: none; }
+  a:hover { color: #8fe0ff; }
+  input, button, select { font-family: inherit; }
+  ::-webkit-scrollbar { height: 0px; width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 4px; }
+  @keyframes dexpop { from { transform: scale(.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0b0d12;padding-bottom:96px">
+
+  <div style="position:sticky;top:0;z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(14px);border-bottom:1px solid #1c2130">
+
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 16px 8px">
+      <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(#f0455a 0 50%, #f1f3f7 50% 100%);border:2px solid #0b0d12;box-shadow:0 0 0 1.5px #3a4253;flex:none"></div>
+      <div style="{{ tabsWrapStyle }}">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#5f6878;font-weight:700;flex:none">Checklist</span>
+        <div style="display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none">
+          <sc-for list="{{ lists }}" as="t" hint-placeholder-count="10">
+            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="{{ searchWrapStyle }}">
+        <span style="position:absolute;left:11px;font-size:13px;color:#5f6878;pointer-events:none">⌕</span>
+        <input value="{{ query }}" onInput="{{ onQuery }}" onFocus="{{ openSearch }}" onBlur="{{ closeSearch }}" placeholder="Search name or #number" style="width:100%;height:32px;background:#131822;border:1px solid #232a3a;border-radius:8px;padding:0 28px 0 28px;color:#e8ecf4;font-size:12.5px;outline:none" style-focus="border-color:#4cc9f0" />
+        <button onClick="{{ clearQuery }}" style="{{ clearBtnStyle }}">✕</button>
+      </div>
+      <button onClick="{{ focusSearch }}" style="{{ searchIconStyle }}">⌕</button>
+      <select value="{{ sort }}" onChange="{{ onSort }}" style="flex:none;background:#131822;border:1px solid #232a3a;border-radius:8px;color:#9aa5b8;font-size:11.5px;padding:0 5px;height:32px;outline:none;cursor:pointer">
+        <option value="dex">#dex</option>
+        <option value="name">A–Z</option>
+        <option value="gen">Gen</option>
+        <option value="debut">Newest</option>
+      </select>
+      <button onClick="{{ toggleTap }}" style="{{ tapBtnStyle }}">{{ tapBtnLabel }}</button>
+      <button onClick="{{ toggleFilters }}" style="{{ filterBtnStyle }}">{{ filterBtnLabel }}</button>
+      <button onClick="{{ toggleStats }}" style="flex:none;height:32px;background:#151a25;border:1px solid #232a3a;color:#9aa5b8;border-radius:8px;padding:0 9px;font-size:11px;font-weight:600;cursor:pointer" style-hover="background:#1c2231;color:#e8ecf4">Stats</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;padding:0 16px 9px">
+      <div style="flex:1;height:5px;background:#1b2130;border-radius:99px;overflow:hidden">
+        <div style="{{ activeBarStyle }}"></div>
+      </div>
+      <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:#9aa5b8;flex:none">{{ headerLine }}</span>
+    </div>
+
+    <sc-if value="{{ showStats }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+          <div style="background:#111621;border:1px solid #1e2534;border-radius:10px;padding:10px 12px;width:142px;height:59px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span style="font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#7b8598;font-weight:600">{{ s.label }}</span>
+              <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:#e8ecf4">{{ s.value }}</span>
+            </div>
+            <div style="height:4px;background:#1b2130;border-radius:99px;margin-top:8px;overflow:hidden">
+              <div style="{{ s.barStyle }}"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:8px 0;border-top:1px solid #161b27">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#7b8598;font-weight:700;padding:0 16px 6px">Filter by</div>
+        <sc-for list="{{ chipRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:flex;gap:6px;align-items:center;overflow-x:auto;padding:3px 16px;scrollbar-width:none">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#5f6878;font-weight:700;flex:none;width:44px">{{ row.label }}</span>
+            <sc-for list="{{ row.chips }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </sc-for>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 16px 0">
+          <span style="font-size:10.5px;color:#5f6878;font-family:'JetBrains Mono',monospace">{{ resultLine }}</span>
+          <button onClick="{{ resetFilters }}" style="background:none;border:none;color:#6d7789;font-size:11px;font-weight:600;cursor:pointer;padding:2px 0" style-hover="color:#4cc9f0">Clear filters</button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:grid;grid-template-columns:{{ gridCols }};gap:7px;padding:12px 16px 0">
+    <sc-for list="{{ items }}" as="pm" hint-placeholder-count="30">
+      <div onClick="{{ pm.onClick }}" title="{{ pm.title }}" style="{{ pm.cardStyle }}" style-hover="border-color:#3a4356">
+        <div style="{{ pm.spriteBox }}">
+          <img src="{{ pm.src }}" onError="{{ pm.onError }}" loading="lazy" width="96" height="96" alt="{{ pm.name }}" style="width:100%;height:100%;object-fit:contain;display:block;filter:{{ pm.imgFilter }}" />
+          <span style="{{ pm.markStyle }}">{{ pm.markGlyph }}</span>
+          <span style="{{ pm.dotsStyle }}">{{ pm.dots }}</span>
+        </div>
+        <div style="width:100%;padding:0 2px">
+          <div style="font-size:10.5px;font-weight:600;line-height:1.15;color:#dfe5ef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pm.name }}</div>
+          <div style="{{ pm.variantStyle }}">{{ pm.variant }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ hasMore }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;justify-content:center;padding:20px 16px 0">
+      <button onClick="{{ loadMore }}" style="background:#151a25;border:1px solid #262e40;color:#c7d0e0;border-radius:10px;padding:11px 22px;font-size:12px;font-weight:600;cursor:pointer" style-hover="border-color:#4cc9f0;color:#fff">{{ moreLabel }}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="text-align:center;padding:60px 24px;color:#5f6878;font-size:13px">Nothing matches these filters.</div>
+  </sc-if>
+
+  <div style="display:flex;gap:8px;justify-content:center;padding:32px 16px 8px;flex-wrap:wrap">
+    <button onClick="{{ doExport }}" style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#e8ecf4;border-color:#3a4356">Export JSON</button>
+    <label style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer">Import JSON<input type="file" accept=".json" onChange="{{ doImport }}" style="display:none" /></label>
+    <button onClick="{{ doReset }}" style="background:none;border:1px solid #2a1b22;color:#7d5a66;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#f0455a;border-color:#5a2733">Reset progress</button>
+  </div>
+  <div style="text-align:center;font-size:10px;color:#454d5d;padding:6px 16px 0;font-family:'JetBrains Mono',monospace">Saved locally · data pokemongo-shiny · sprites PokeMiners · types PokéAPI</div>
+
+  <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:40;background:rgba(6,8,12,.72);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)">
+      <div onClick="{{ stop }}" style="width:100%;max-width:460px;background:#111621;border:1px solid #232a3a;border-bottom:none;border-radius:16px 16px 0 0;padding:18px 18px 26px;animation:dexpop .16s ease">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="{{ detail.spriteBox }}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#6d7789">{{ detail.dexLabel }}</div>
+            <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">{{ detail.name }}</div>
+            <div style="font-size:11px;color:#7b8598;margin-top:2px">{{ detail.meta }}</div>
+          </div>
+          <button onClick="{{ closeDetail }}" style="background:#181e2b;border:1px solid #262e40;color:#8b95a8;width:30px;height:30px;border-radius:8px;font-size:14px;cursor:pointer;flex:none">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:7px;margin-top:16px">
+          <sc-for list="{{ detail.toggles }}" as="t" hint-placeholder-count="10">
+            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="font-size:10.5px;color:#5f6878;margin-top:14px;font-family:'JetBrains Mono',monospace">{{ detail.debutLine }}</div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4cc9f0&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#4cc9f0&quot;,&quot;#2ee6a8&quot;,&quot;#f5c542&quot;,&quot;#ff5c8a&quot;],&quot;section&quot;:&quot;Look&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;comfortable&quot;,&quot;compact&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;spriteBase&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Images&quot;}}">
+const TYPE_COLORS = {
+  normal:'#9099a1', fire:'#ff9d55', water:'#4d90d5', electric:'#f4d23c', grass:'#63bc5a',
+  ice:'#73cec0', fighting:'#ce4069', poison:'#ab6ac8', ground:'#d97845', flying:'#8fa8dd',
+  psychic:'#f97176', bug:'#90c12c', rock:'#c7b78b', ghost:'#5269ad', dragon:'#0b6dc3',
+  dark:'#5a5366', steel:'#5a8ea1', fairy:'#ec8fe6'
+};
+const KEY = 'shinydex.marks.v2';
+const OLD_KEY = 'shinydex.marks.v1';
+const CDN = 'https://cdn.jsdelivr.net/gh/PokeMiners/pogo_assets/Images/Pokemon%20-%20256x256/Addressable%20Assets/';
+const FORMS = ['Alolan','Galarian','Hisuian','Paldean','Mega','Origin','Gigantamax'];
+
+// checklists: id, label, bit, glyph, colour, scope
+const LISTS = [
+  { id:'pokemon',  label:'Pokémon',  bit:1,   glyph:'●', col:'#8fa8dd', scope:'all',  shinySprite:false },
+  { id:'shiny',    label:'Shiny',    bit:2,   glyph:'✦', col:'#4cc9f0', scope:'all',  shinySprite:true },
+  { id:'lucky',    label:'Lucky',    bit:4,   glyph:'★', col:'#f5c542', scope:'all',  shinySprite:false },
+  { id:'xxl',      label:'XXL',      bit:8,   glyph:'XL',col:'#7fd8c0', scope:'base', shinySprite:false },
+  { id:'xxs',      label:'XXS',      bit:16,  glyph:'XS',col:'#7fd8c0', scope:'base', shinySprite:false },
+  { id:'gmax',     label:'G-MAX',    bit:32,  glyph:'G', col:'#f97176', scope:'Gigantamax', shinySprite:false },
+  { id:'mega',     label:'MEGA',     bit:64,  glyph:'M', col:'#ab6ac8', scope:'Mega', shinySprite:false },
+  { id:'shadow',   label:'Shadow',   bit:128, glyph:'◆', col:'#a06ad0', scope:'base', shinySprite:false },
+  { id:'purified', label:'Purified', bit:256, glyph:'✧', col:'#73cec0', scope:'base', shinySprite:false },
+  { id:'hundo',    label:'*100%',    bit:512, glyph:'%', col:'#ff9d55', scope:'base', shinySprite:false }
+];
+
+class Component extends DCLogic {
+  state = {
+    all: [], loaded: false, marks: {}, query: '', sort: 'dex',
+    list: 'pokemon', tapMarks: true, limit: 240, showStats: false,
+    filtersOpen: false, detailPid: null, broken: {}, searchOpen: false,
+    f: { shiny:'any', lucky:'any', costume:'any', baby:'any', forms:[], gens:[], types:[] }
+  };
+
+  componentDidMount() {
+    let marks = {};
+    try {
+      marks = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (!marks) {
+        const old = JSON.parse(localStorage.getItem(OLD_KEY) || 'null');
+        marks = {};
+        if (old) { // v1 bits: shiny=1 lucky=2 shadow=4 purified=8
+          Object.keys(old).forEach(pid => {
+            const o = old[pid];
+            const n = ((o & 1) ? 2 : 0) | ((o & 2) ? 4 : 0) | ((o & 4) ? 128 : 0) | ((o & 8) ? 256 : 0);
+            if (n) marks[pid] = n;
+          });
+          localStorage.setItem(KEY, JSON.stringify(marks));
+        }
+      }
+    } catch (e) { marks = {}; }
+    fetch('data/dex.json').then(r => r.json())
+      .then(all => this.setState({ all, loaded: true, marks }))
+      .catch(() => this.setState({ loaded: true, marks }));
+  }
+
+  get active() { return LISTS.find(l => l.id === this.state.list) || LISTS[0]; }
+
+  save(marks) {
+    this.setState({ marks });
+    try { localStorage.setItem(KEY, JSON.stringify(marks)); } catch (e) {}
+  }
+
+  bit(pid, b) {
+    const marks = { ...this.state.marks };
+    const next = (marks[pid] || 0) ^ b;
+    if (next) marks[pid] = next; else delete marks[pid];
+    this.save(marks);
+  }
+
+  setF(patch) { this.setState({ f: { ...this.state.f, ...patch }, limit: 240 }); }
+  cycleList(key, val) {
+    const l = this.state.f[key];
+    this.setF({ [key]: l.includes(val) ? l.filter(v => v !== val) : [...l, val] });
+  }
+  tri(key, val) { this.setF({ [key]: this.state.f[key] === val ? 'any' : val }); }
+
+  inScope(pm) {
+    const s = this.active.scope;
+    if (s === 'all') return true;
+    if (s === 'base') return !pm.c && !['Mega','Origin','Gigantamax'].includes(pm.f);
+    return pm.f === s;
+  }
+
+  spriteUrl(pm) {
+    if (this.props.spriteBase !== undefined && this.props.spriteBase !== '') {
+      return `${this.props.spriteBase}${pm.p}.png`;
+    }
+    return `${CDN}${pm.p}${this.active.shinySprite ? '.s' : ''}.icon.png`;
+  }
+
+  filtered() {
+    const { all, marks, query, sort, f } = this.state;
+    const A = this.active;
+    const q = query.trim().toLowerCase();
+    const qNum = q.replace(/^#/, '');
+    let out = all.filter(pm => {
+      if (!this.inScope(pm)) return false;
+      const m = marks[pm.p] || 0;
+      if (q) {
+        const okName = pm.n.toLowerCase().includes(q);
+        const okNum = /^\d+$/.test(qNum) && String(pm.d).includes(qNum);
+        if (!okName && !okNum) return false;
+      }
+      if (f.shiny === 'have' && !(m & 2)) return false;
+      if (f.shiny === 'missing' && (m & 2)) return false;
+      if (f.shiny === 'unreleased' && pm.r) return false;
+      if (f.lucky === 'have' && !(m & 4)) return false;
+      if (f.lucky === 'missing' && (m & 4)) return false;
+      if (f.costume === 'only' && !pm.c) return false;
+      if (f.costume === 'exclude' && pm.c) return false;
+      if (f.baby === 'only' && !pm.b) return false;
+      if (f.forms.length && !f.forms.includes(pm.f)) return false;
+      if (f.gens.length && !f.gens.includes(pm.g)) return false;
+      if (f.types.length && !pm.t.some(t => f.types.includes(t))) return false;
+      return true;
+    });
+    if (sort === 'name') out = out.slice().sort((a, b) => a.n.localeCompare(b.n) || a.d - b.d);
+    else if (sort === 'gen') out = out.slice().sort((a, b) => a.g - b.g || a.d - b.d);
+    else if (sort === 'debut') out = out.slice().sort((a, b) => (b.dt || '').localeCompare(a.dt || '') || a.d - b.d);
+    return out;
+  }
+
+  chip(label, active, onClick, color) {
+    const c = color || this.props.accent || '#4cc9f0';
+    return { label, onClick, style: `flex:none;border-radius:99px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.12s;border:1px solid ${active ? c : '#242c3c'};background:${active ? c + '22' : '#131822'};color:${active ? c : '#8b95a8'}` };
+  }
+
+  renderVals() {
+    const { all, marks, f, list, tapMarks, limit, sort, query, showStats, filtersOpen, detailPid, broken, searchOpen } = this.state;
+    const searchWide = searchOpen || !!query;
+    const accent = this.props.accent || '#4cc9f0';
+    const A = this.active;
+    const scoped = all.filter(pm => this.inScope(pm));
+    const result = this.filtered();
+    const SHORT = { Gigantamax: 'Gmax', Alolan: 'Alola' };
+    const size = this.props.density === 'compact' ? 96 : 124;
+
+    const items = result.slice(0, limit).map(pm => {
+      const m = marks[pm.p] || 0;
+      const on = !!(m & A.bit);
+      const c = TYPE_COLORS[pm.t[0]] || '#5a6478';
+      const c2 = TYPE_COLORS[pm.t[1]] || c;
+      const variant = pm.c ? pm.c.replace(/\s*costume$/i, '')
+        : pm.f ? ((SHORT[pm.f] || pm.f) + (pm.sf ? ' ' + pm.sf : ' form'))
+        : (pm.sf || '');
+      const others = LISTS.filter(l => l.id !== A.id && (m & l.bit));
+      return {
+        key: pm.p, name: pm.n, variant: variant || '\u00a0',
+        title: `#${pm.d} ${pm.n}${variant ? ' · ' + variant : ''}${pm.dt ? '\n@' + pm.dt : ''}`,
+        src: broken[pm.p] ? `${CDN}pm${pm.d}.icon.png` : this.spriteUrl(pm),
+        onError: e => { if (!broken[pm.p]) this.setState({ broken: { ...broken, [pm.p]: 1 } }); else e.target.style.opacity = '.12'; },
+        imgFilter: pm.r ? 'none' : 'grayscale(1)',
+        spriteBox: `position:relative;width:100%;aspect-ratio:1;border-radius:9px;padding:5%;background:radial-gradient(circle at 34% 26%, ${c}2e, ${c2}0d 72%);border:1px solid ${c}2b`,
+        variantStyle: `font-size:9px;line-height:1.2;color:${pm.c ? '#c98fd6' : pm.f ? '#8fa8dd' : variant ? '#8b95a8' : '#3a4150'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500`,
+        cardStyle: `display:flex;flex-direction:column;gap:5px;padding:6px;border-radius:12px;cursor:pointer;transition:.12s;background:${on ? A.col + '16' : '#10151f'};border:1px solid ${on ? A.col + '66' : '#1b2130'};opacity:${pm.r ? 1 : .55}`,
+        markGlyph: A.glyph,
+        markStyle: `position:absolute;top:3px;right:3px;min-width:15px;height:15px;padding:0 3px;border-radius:5px;font-size:9px;font-weight:700;display:${on ? 'flex' : 'none'};align-items:center;justify-content:center;background:${A.col};color:#0b0d12;font-family:'JetBrains Mono',monospace`,
+        dots: others.map(l => l.glyph).join(''),
+        dotsStyle: `position:absolute;bottom:2px;right:4px;font-size:8px;letter-spacing:1px;color:#6d7789;display:${others.length ? 'block' : 'none'}`,
+        onClick: () => {
+          if (tapMarks) this.bit(pm.p, A.bit);
+          else this.setState({ detailPid: pm.p });
+        }
+      };
+    });
+
+    const have = scoped.filter(p => marks[p.p] & A.bit).length;
+    const total = scoped.length;
+    const pct = (a, b) => b ? Math.round(1000 * a / b) / 10 : 0;
+    const bar = (p, col) => `height:100%;width:${Math.min(100, p)}%;background:${col};border-radius:99px;transition:width .2s`;
+
+    const lists = LISTS.map(l => {
+      const on = l.id === list;
+      return { label: l.label, onClick: () => this.setState({ list: l.id, limit: 240, detailPid: null }),
+        style: `flex:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s;border:1px solid ${on ? l.col : '#242c3c'};background:${on ? l.col + '26' : '#131822'};color:${on ? l.col : '#8b95a8'}` };
+    });
+
+    const stats = LISTS.filter(l => ['pokemon','shiny','lucky'].includes(l.id)).map(l => {
+      const sc = all.filter(pm => l.scope === 'all' ? true : (l.scope === 'base' ? (!pm.c && !['Mega','Origin','Gigantamax'].includes(pm.f)) : pm.f === l.scope));
+      const h = sc.filter(pm => marks[pm.p] & l.bit).length;
+      return { label: l.label, value: `${h} / ${sc.length}`, barStyle: bar(pct(h, sc.length), l.col) };
+    });
+
+    const activeFilters = ['shiny','lucky','costume','baby'].filter(k => f[k] !== 'any').length
+      + f.forms.length + f.gens.length + f.types.length;
+
+    const chipRows = [
+      { label: 'Shiny', chips: [
+        this.chip('Caught', f.shiny === 'have', () => this.tri('shiny','have'), '#4cc9f0'),
+        this.chip('Missing', f.shiny === 'missing', () => this.tri('shiny','missing'), '#4cc9f0'),
+        this.chip('Not released', f.shiny === 'unreleased', () => this.tri('shiny','unreleased'), '#8b95a8')
+      ] },
+      { label: 'Lucky', chips: [
+        this.chip('Have', f.lucky === 'have', () => this.tri('lucky','have'), '#f5c542'),
+        this.chip('Missing', f.lucky === 'missing', () => this.tri('lucky','missing'), '#f5c542')
+      ] },
+      { label: 'Form', chips: [
+        ...FORMS.map(fm => this.chip(fm, f.forms.includes(fm), () => this.cycleList('forms', fm), '#8fa8dd')),
+        this.chip('Costume', f.costume === 'only', () => this.tri('costume','only'), '#ec8fe6'),
+        this.chip('No costume', f.costume === 'exclude', () => this.tri('costume','exclude'), '#ec8fe6'),
+        this.chip('Baby', f.baby === 'only', () => this.tri('baby','only'), '#73cec0')
+      ] },
+      { label: 'Gen', chips: [1,2,3,4,5,6,7,8,9].map(g => this.chip('G' + g, f.gens.includes(g), () => this.cycleList('gens', g), '#9aa5b8')) },
+      { label: 'Type', chips: Object.keys(TYPE_COLORS).map(t => this.chip(t, f.types.includes(t), () => this.cycleList('types', t), TYPE_COLORS[t])) }
+    ];
+
+    const dpm = detailPid ? all.find(p => p.p === detailPid) : null;
+    let detail = null;
+    if (dpm) {
+      const m = marks[dpm.p] || 0;
+      const c = TYPE_COLORS[dpm.t[0]] || '#5a6478';
+      detail = {
+        name: dpm.n, dexLabel: '#' + String(dpm.d).padStart(4, '0'),
+        spriteBox: `width:72px;height:72px;flex:none;border-radius:12px;border:1px solid ${c}33;background-color:${c}14;background-image:url("${broken[dpm.p] ? `${CDN}pm${dpm.d}.icon.png` : this.spriteUrl(dpm)}");background-size:64px 64px;background-repeat:no-repeat;background-position:center`,
+        meta: [dpm.f, dpm.c || dpm.sf, 'Gen ' + dpm.g, dpm.t.join(' / ')].filter(Boolean).join(' · '),
+        debutLine: dpm.r ? 'Shiny released ' + dpm.dt : 'Shiny not released in game yet',
+        toggles: LISTS.map(l => ({
+          label: l.label, onClick: () => this.bit(dpm.p, l.bit),
+          style: `border-radius:9px;padding:10px 6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${(m & l.bit) ? l.col : '#262e40'};background:${(m & l.bit) ? l.col + '22' : '#161c28'};color:${(m & l.bit) ? l.col : '#8b95a8'}`
+        }))
+      };
+    }
+
+    return {
+      items, stats, lists, chipRows, detail, sort, query, showStats, filtersOpen,
+      tabsWrapStyle: `display:${searchWide ? 'none' : 'flex'};align-items:center;gap:8px;flex:1;min-width:0`,
+      searchWrapStyle: `display:${searchWide ? 'flex' : 'none'};position:relative;align-items:center;flex:1;min-width:0`,
+      searchIconStyle: `display:${searchWide ? 'none' : 'flex'};align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:8px;font-size:15px;cursor:pointer;border:1px solid #232a3a;background:#131822;color:#9aa5b8`,
+      clearBtnStyle: `position:absolute;right:6px;width:20px;height:20px;border-radius:5px;border:none;background:#232a3a;color:#9aa5b8;font-size:10px;cursor:pointer;display:${query ? 'flex' : 'none'};align-items:center;justify-content:center`,
+      focusSearch: () => {
+        this.setState({ searchOpen: true });
+        setTimeout(() => { const el = document.querySelector('input[placeholder^="Search name"]'); if (el) el.focus(); }, 20);
+      },
+      openSearch: () => this.setState({ searchOpen: true }),
+      closeSearch: () => this.setState({ searchOpen: false }),
+      clearQuery: () => this.setState({ query: '', searchOpen: false, limit: 240 }),
+      gridCols: `repeat(auto-fill, minmax(${size}px, 1fr))`,
+      activeBarStyle: bar(pct(have, total), A.col),
+      headerLine: this.state.loaded ? `${have} / ${total} · ${pct(have, total)}%` : 'loading…',
+      resultLine: `${result.length} shown`,
+      filterBtnLabel: activeFilters ? `Filters ${activeFilters}` : 'Filters',
+      filterBtnStyle: `flex:none;height:36px;padding:0 11px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ${activeFilters || filtersOpen ? accent : '#232a3a'};background:${activeFilters || filtersOpen ? accent + '22' : '#131822'};color:${activeFilters || filtersOpen ? accent : '#9aa5b8'}`,
+      tapBtnLabel: tapMarks ? 'Tap: mark' : 'Tap: info',
+      tapBtnStyle: `flex:none;height:36px;padding:0 11px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ${tapMarks ? A.col : '#232a3a'};background:${tapMarks ? A.col + '22' : '#131822'};color:${tapMarks ? A.col : '#9aa5b8'}`,
+      toggleTap: () => this.setState({ tapMarks: !tapMarks }),
+      toggleFilters: () => this.setState({ filtersOpen: !filtersOpen }),
+      toggleStats: () => this.setState({ showStats: !showStats }),
+      hasMore: result.length > limit, isEmpty: this.state.loaded && result.length === 0,
+      moreLabel: `Load ${Math.min(240, result.length - limit)} more`,
+      loadMore: () => this.setState({ limit: limit + 240 }),
+      onQuery: e => this.setState({ query: e.target.value, limit: 240 }),
+      onSort: e => this.setState({ sort: e.target.value }),
+      resetFilters: () => this.setState({ query: '', limit: 240, filtersOpen: false, f: { shiny:'any', lucky:'any', costume:'any', baby:'any', forms:[], gens:[], types:[] } }),
+      closeDetail: () => this.setState({ detailPid: null }),
+      stop: e => e.stopPropagation(),
+      doExport: () => {
+        const blob = new Blob([JSON.stringify({ v: 2, marks }, null, 0)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'shiny-lucky-dex.json';
+        a.click();
+      },
+      doImport: e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        file.text().then(t => { try { const d = JSON.parse(t); this.save(d.marks || d); } catch (err) {} });
+      },
+      doReset: () => { if (confirm('Clear all checklist marks?')) this.save({}); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>
