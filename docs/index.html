@@ -12,9 +12,9 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -30,7 +30,7 @@
 
 <div style="min-height:100vh;background:#0b0d12;padding-bottom:96px">
 
-  <div style="position:sticky;top:0;z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(14px);border-bottom:1px solid #1c2130">
+  <div style="position:sticky;top:0;z-index:20;{{ headerTintStyle }};backdrop-filter:blur(14px);border-bottom:1px solid #1c2130;transition:background .25s">
 
     <div style="display:flex;align-items:center;gap:8px;padding:10px 16px 8px">
       <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(#f0455a 0 50%, #f1f3f7 50% 100%);border:2px solid #0b0d12;box-shadow:0 0 0 1.5px #3a4253;flex:none"></div>
@@ -38,13 +38,13 @@
         <span style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#5f6878;font-weight:700;flex:none">Checklist</span>
         <div style="display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none">
           <sc-for list="{{ lists }}" as="t" hint-placeholder-count="10">
-            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+            <button onClick="{{ t.onClick }}" style="{{ t.style }}"><span style="{{ t.iconStyle }}"></span>{{ t.label }}</button>
           </sc-for>
         </div>
       </div>
       <div style="{{ searchWrapStyle }}">
         <span style="position:absolute;left:11px;font-size:13px;color:#5f6878;pointer-events:none">⌕</span>
-        <input value="{{ query }}" onInput="{{ onQuery }}" onFocus="{{ openSearch }}" onBlur="{{ closeSearch }}" placeholder="Search name or #number" style="width:100%;height:32px;background:#131822;border:1px solid #232a3a;border-radius:8px;padding:0 28px 0 28px;color:#e8ecf4;font-size:12.5px;outline:none" style-focus="border-color:#4cc9f0" />
+        <input value="{{ query }}" onInput="{{ onQuery }}" onFocus="{{ openSearch }}" onBlur="{{ closeSearch }}" placeholder="Search name or #number" style="width:100%;height:32px;background:#131822;border:1px solid #232a3a;border-radius:8px;padding:0 28px 0 28px;color:#e8ecf4;font-size:12.5px;outline:none" style-focus="border-color:#4cc9f0">
         <button onClick="{{ clearQuery }}" style="{{ clearBtnStyle }}">✕</button>
       </div>
       <button onClick="{{ focusSearch }}" style="{{ searchIconStyle }}">⌕</button>
@@ -55,8 +55,27 @@
         <option value="debut">Newest</option>
       </select>
       <button onClick="{{ toggleTap }}" style="{{ tapBtnStyle }}">{{ tapBtnLabel }}</button>
+      <button onClick="{{ toggleSelectMode }}" style="{{ selectBtnStyle }}">{{ selectBtnLabel }}</button>
       <button onClick="{{ toggleFilters }}" style="{{ filterBtnStyle }}">{{ filterBtnLabel }}</button>
       <button onClick="{{ toggleStats }}" style="flex:none;height:32px;background:#151a25;border:1px solid #232a3a;color:#9aa5b8;border-radius:8px;padding:0 9px;font-size:11px;font-weight:600;cursor:pointer" style-hover="background:#1c2231;color:#e8ecf4">Stats</button>
+      <a href="{{ guideHref }}" style="flex:none;height:32px;display:flex;align-items:center;background:#151a25;border:1px solid #232a3a;color:#9aa5b8;border-radius:8px;padding:0 9px;font-size:11px;font-weight:600;text-decoration:none" style-hover="background:#1c2231;color:#e8ecf4">Guide</a>
+      <div style="position:relative;flex:none">
+        <button onClick="{{ toggleProfileMenu }}" style="flex:none;height:32px;display:flex;align-items:center;gap:5px;background:#151a25;border:1px solid #232a3a;color:#c7d0e0;border-radius:8px;padding:0 10px 0 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap" style-hover="background:#1c2231">
+          <span style="{{ profileDotStyle }}"></span>{{ profileLabel }}<span style="color:#5f6878;font-size:9px">▾</span>
+        </button>
+        <sc-if value="{{ profileMenuOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:38px;right:0;z-index:30;width:210px;background:#111621;border:1px solid #232a3a;border-radius:10px;padding:6px;box-shadow:0 16px 40px rgba(0,0,0,.5)">
+            <sc-for list="{{ profiles }}" as="pf" hint-placeholder-count="4">
+              <div style="{{ pf.rowStyle }}">
+                <button onClick="{{ pf.onSelect }}" style="flex:1;text-align:left;background:none;border:none;color:{{ pf.color }};font-size:12px;font-weight:600;cursor:pointer;padding:7px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pf.label }}</button>
+                <button onClick="{{ pf.onRename }}" style="flex:none;background:none;border:none;color:#5f6878;font-size:11px;cursor:pointer;padding:4px 5px" style-hover="color:#9aa5b8">✎</button>
+                <button onClick="{{ pf.onDelete }}" style="{{ pf.deleteStyle }}">✕</button>
+              </div>
+            </sc-for>
+            <button onClick="{{ addProfile }}" style="width:100%;margin-top:4px;background:#151a25;border:1px dashed #2a3244;color:#8b95a8;border-radius:7px;padding:7px 6px;font-size:11.5px;font-weight:600;cursor:pointer" style-hover="color:#e8ecf4;border-color:#3a4356">+ Add profile</button>
+          </div>
+        </sc-if>
+      </div>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;padding:0 16px 9px">
@@ -101,21 +120,26 @@
     </sc-if>
   </div>
 
-  <div style="display:grid;grid-template-columns:{{ gridCols }};gap:7px;padding:12px 16px 0">
-    <sc-for list="{{ items }}" as="pm" hint-placeholder-count="30">
-      <div onClick="{{ pm.onClick }}" title="{{ pm.title }}" style="{{ pm.cardStyle }}" style-hover="border-color:#3a4356">
-        <div style="{{ pm.spriteBox }}">
-          <img src="{{ pm.src }}" onError="{{ pm.onError }}" loading="lazy" width="96" height="96" alt="{{ pm.name }}" style="width:100%;height:100%;object-fit:contain;display:block;filter:{{ pm.imgFilter }}" />
-          <span style="{{ pm.markStyle }}">{{ pm.markGlyph }}</span>
-          <span style="{{ pm.dotsStyle }}">{{ pm.dots }}</span>
+  <sc-for list="{{ groups }}" as="grp" hint-placeholder-count="1">
+    <sc-if value="{{ grp.showHeader }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.1em;color:#5f6878;padding:16px 16px 2px">{{ grp.region }}</div>
+    </sc-if>
+    <div style="display:grid;grid-template-columns:{{ gridCols }};gap:7px;padding:8px 16px 0">
+      <sc-for list="{{ grp.items }}" as="pm" hint-placeholder-count="30">
+        <div onClick="{{ pm.onClick }}" title="{{ pm.title }}" style="{{ pm.cardStyle }}" style-hover="border-color:#3a4356">
+          <div style="{{ pm.spriteBox }}">
+            <img src="{{ pm.src }}" onError="{{ pm.onError }}" loading="lazy" width="96" height="96" alt="{{ pm.name }}" style="width:100%;height:100%;object-fit:contain;display:block;filter:{{ pm.imgFilter }}">
+            <span style="{{ pm.markStyle }}">{{ pm.markGlyph }}</span>
+            <span style="{{ pm.dotsStyle }}">{{ pm.dots }}</span>
+          </div>
+          <div style="width:100%;padding:0 2px">
+            <div style="font-size:10.5px;font-weight:600;line-height:1.15;color:#dfe5ef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pm.dexNum }} {{ pm.name }}</div>
+            <div style="{{ pm.variantStyle }}">{{ pm.variant }}</div>
+          </div>
         </div>
-        <div style="width:100%;padding:0 2px">
-          <div style="font-size:10.5px;font-weight:600;line-height:1.15;color:#dfe5ef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pm.name }}</div>
-          <div style="{{ pm.variantStyle }}">{{ pm.variant }}</div>
-        </div>
-      </div>
-    </sc-for>
-  </div>
+      </sc-for>
+    </div>
+  </sc-for>
 
   <sc-if value="{{ hasMore }}" hint-placeholder-val="{{ false }}">
     <div style="display:flex;justify-content:center;padding:20px 16px 0">
@@ -127,48 +151,88 @@
     <div style="text-align:center;padding:60px 24px;color:#5f6878;font-size:13px">Nothing matches these filters.</div>
   </sc-if>
 
+  <sc-if value="{{ selectMode }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;justify-content:center;padding:14px 16px calc(14px + env(safe-area-inset-bottom))">
+      <div style="display:flex;align-items:center;gap:8px;background:#111621;border:1px solid #232a3a;border-radius:12px;padding:8px 10px;box-shadow:0 16px 40px rgba(0,0,0,.5)">
+        <span style="font-size:11.5px;color:#9aa5b8;font-weight:600;padding:0 4px;white-space:nowrap">{{ selectedCount }} selected</span>
+        <button onClick="{{ selectAllFiltered }}" style="background:#151a25;border:1px solid #232a3a;color:#c7d0e0;border-radius:8px;padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap">{{ selectAllLabel }}</button>
+        <button onClick="{{ markSelected }}" style="{{ markSelectedStyle }}">Mark {{ activeLabel }}</button>
+        <button onClick="{{ unmarkSelected }}" style="background:#151a25;border:1px solid #232a3a;color:#9aa5b8;border-radius:8px;padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer">Unmark</button>
+        <button onClick="{{ clearSelection }}" style="background:none;border:none;color:#5f6878;font-size:11.5px;font-weight:600;cursor:pointer;padding:8px 6px">Clear</button>
+      </div>
+    </div>
+  </sc-if>
+
   <div style="display:flex;gap:8px;justify-content:center;padding:32px 16px 8px;flex-wrap:wrap">
     <button onClick="{{ doExport }}" style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#e8ecf4;border-color:#3a4356">Export JSON</button>
-    <label style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer">Import JSON<input type="file" accept=".json" onChange="{{ doImport }}" style="display:none" /></label>
+    <label style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer">Import JSON<input type="file" accept=".json" onChange="{{ doImport }}" style="display:none"></label>
     <button onClick="{{ doReset }}" style="background:none;border:1px solid #2a1b22;color:#7d5a66;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#f0455a;border-color:#5a2733">Reset progress</button>
   </div>
   <div style="text-align:center;font-size:10px;color:#454d5d;padding:6px 16px 0;font-family:'JetBrains Mono',monospace">Saved locally · data pokemongo-shiny · sprites PokeMiners · types PokéAPI</div>
 
   <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:40;background:rgba(6,8,12,.72);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)">
-      <div onClick="{{ stop }}" style="width:100%;max-width:460px;background:#111621;border:1px solid #232a3a;border-bottom:none;border-radius:16px 16px 0 0;padding:18px 18px 26px;animation:dexpop .16s ease">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="{{ detail.spriteBox }}"></div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#6d7789">{{ detail.dexLabel }}</div>
-            <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">{{ detail.name }}</div>
-            <div style="font-size:11px;color:#7b8598;margin-top:2px">{{ detail.meta }}</div>
-          </div>
-          <button onClick="{{ closeDetail }}" style="background:#181e2b;border:1px solid #262e40;color:#8b95a8;width:30px;height:30px;border-radius:8px;font-size:14px;cursor:pointer;flex:none">✕</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:7px;margin-top:16px">
-          <sc-for list="{{ detail.toggles }}" as="t" hint-placeholder-count="10">
-            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+    <div onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:40;background:rgba(6,8,12,.72);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)">
+    <div onClick="{{ stop }}" style="width:100%;max-width:400px;background:#e9c876;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:dexpop .16s ease">
+
+      <div style="position:relative;padding:22px 18px 16px;text-align:center;background:radial-gradient(circle at 50% 0%, #f6dd9c, #dfae52 78%)">
+        <button onClick="{{ closeDetail }}" style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.18);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:12px;cursor:pointer">✕</button>
+        <div style="{{ detail.spriteBox }}"></div>
+        <div style="font-size:12px;font-weight:700;color:#fff8e6;text-shadow:0 1px 3px rgba(0,0,0,.25);letter-spacing:.02em">{{ detail.dexLabel }} {{ detail.nameUpper }}</div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:8px">
+          <sc-for list="{{ detail.typePills }}" as="tp" hint-placeholder-count="2">
+            <span style="{{ tp.style }}">{{ tp.label }}</span>
           </sc-for>
         </div>
-        <div style="font-size:10.5px;color:#5f6878;margin-top:14px;font-family:'JetBrains Mono',monospace">{{ detail.debutLine }}</div>
       </div>
-    </div>
+
+      <div style="display:flex;background:#fbeecb;border-bottom:1px solid #e2c98c">
+        <div style="flex:1;text-align:center;padding:10px 0;font-size:11px;font-weight:700;letter-spacing:.05em;color:#5a4322;border-bottom:2px solid #5a4322">CAUGHT</div>
+        <div style="flex:1;text-align:center;padding:10px 0;font-size:11px;font-weight:700;letter-spacing:.05em;color:#c2a878">INFO</div>
+        <div style="flex:1;text-align:center;padding:10px 0;font-size:11px;font-weight:700;letter-spacing:.05em;color:#c2a878">BATTLE</div>
+      </div>
+
+      <div style="background:#f7e6bd;padding:16px">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <sc-for list="{{ detail.grid }}" as="g" hint-placeholder-count="7">
+            <button onClick="{{ g.onClick }}" style="{{ g.tileStyle }}">
+              <span style="{{ g.glyphStyle }}">{{ g.glyph }}</span>
+              <span style="{{ g.labelStyle }}">{{ g.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ detail.hasSiblings }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.05em;color:#7a6135;text-align:center;margin:16px 0 8px">{{ detail.siblingLabel }}</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <sc-for list="{{ detail.siblings }}" as="s" hint-placeholder-count="2">
+              <button onClick="{{ s.onClick }}" style="{{ s.tileStyle }}"></button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <div style="font-size:9.5px;color:#a08a56;text-align:center;padding:8px 16px 12px;background:#f7e6bd;font-family:'JetBrains Mono',monospace">{{ detail.debutLine }}</div>
+    </div></div>
   </sc-if>
 </div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4cc9f0&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#4cc9f0&quot;,&quot;#2ee6a8&quot;,&quot;#f5c542&quot;,&quot;#ff5c8a&quot;],&quot;section&quot;:&quot;Look&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;comfortable&quot;,&quot;compact&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;spriteBase&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Images&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4cc9f0&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#4cc9f0&quot;,&quot;#2ee6a8&quot;,&quot;#f5c542&quot;,&quot;#ff5c8a&quot;],&quot;section&quot;:&quot;Look&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;comfortable&quot;,&quot;options&quot;:[&quot;comfortable&quot;,&quot;compact&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;spriteBase&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Images&quot;},&quot;guideHref&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Guide.dc.html&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Links&quot;}}">
 const TYPE_COLORS = {
   normal:'#9099a1', fire:'#ff9d55', water:'#4d90d5', electric:'#f4d23c', grass:'#63bc5a',
   ice:'#73cec0', fighting:'#ce4069', poison:'#ab6ac8', ground:'#d97845', flying:'#8fa8dd',
   psychic:'#f97176', bug:'#90c12c', rock:'#c7b78b', ghost:'#5269ad', dragon:'#0b6dc3',
   dark:'#5a5366', steel:'#5a8ea1', fairy:'#ec8fe6'
 };
-const KEY = 'shinydex.marks.v2';
 const OLD_KEY = 'shinydex.marks.v1';
+const LEGACY_KEY = 'shinydex.marks.v2';
+const PROFILES_KEY = 'shinydex.profiles.v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+const PROFILE_COLORS = ['#4cc9f0','#f5c542','#2ee6a8','#ff5c8a','#ab6ac8','#8fa8dd'];
 const CDN = 'https://cdn.jsdelivr.net/gh/PokeMiners/pogo_assets/Images/Pokemon%20-%20256x256/Addressable%20Assets/';
 const FORMS = ['Alolan','Galarian','Hisuian','Paldean','Mega','Origin','Gigantamax'];
+const REGIONS = ['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar','Paldea'];
+const SHINY_ICON = 'assets/shiny_icon.png';
+const ICONS = { shiny: SHINY_ICON, lucky: 'assets/lucky_icon.png', shadow: 'assets/shadow_icon.png', purified: 'assets/purified_icon.png' };
 
 // checklists: id, label, bit, glyph, colour, scope
 const LISTS = [
@@ -189,36 +253,130 @@ class Component extends DCLogic {
     all: [], loaded: false, marks: {}, query: '', sort: 'dex',
     list: 'pokemon', tapMarks: true, limit: 240, showStats: false,
     filtersOpen: false, detailPid: null, broken: {}, searchOpen: false,
+    profiles: [], activeProfile: null, profileMenuOpen: false,
+    selectMode: false, selected: {},
     f: { shiny:'any', lucky:'any', costume:'any', baby:'any', forms:[], gens:[], types:[] }
   };
 
-  componentDidMount() {
+  profileKey(id) { return `shinydex.marks.v2.${id}`; }
+
+  loadRegistry() {
+    try { return JSON.parse(localStorage.getItem(PROFILES_KEY) || 'null'); } catch (e) { return null; }
+  }
+  saveRegistry(reg) {
+    try { localStorage.setItem(PROFILES_KEY, JSON.stringify(reg)); } catch (e) {}
+  }
+
+  loadMarksFor(id) {
     let marks = {};
     try {
-      marks = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (!marks) {
-        const old = JSON.parse(localStorage.getItem(OLD_KEY) || 'null');
-        marks = {};
-        if (old) { // v1 bits: shiny=1 lucky=2 shadow=4 purified=8
-          Object.keys(old).forEach(pid => {
+      marks = JSON.parse(localStorage.getItem(this.profileKey(id)) || 'null');
+      if (!marks) marks = {};
+    } catch (e) { marks = {}; }
+    return marks;
+  }
+
+  componentDidMount() {
+    let reg = this.loadRegistry();
+    if (!reg) {
+      // migrate any pre-profile data into a first profile
+      let legacy = {};
+      try {
+        legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || 'null');
+        if (!legacy) {
+          const old = JSON.parse(localStorage.getItem(OLD_KEY) || 'null');
+          legacy = {};
+          if (old) Object.keys(old).forEach(pid => {
             const o = old[pid];
             const n = ((o & 1) ? 2 : 0) | ((o & 2) ? 4 : 0) | ((o & 4) ? 128 : 0) | ((o & 8) ? 256 : 0);
-            if (n) marks[pid] = n;
+            if (n) legacy[pid] = n;
           });
-          localStorage.setItem(KEY, JSON.stringify(marks));
         }
-      }
-    } catch (e) { marks = {}; }
+      } catch (e) { legacy = {}; }
+      const id = uid();
+      reg = { order: [id], names: { [id]: 'Player 1' }, active: id };
+      this.saveRegistry(reg);
+      try { localStorage.setItem(this.profileKey(id), JSON.stringify(legacy)); } catch (e) {}
+    }
+    const marks = this.loadMarksFor(reg.active);
+    this.setState({
+      profiles: reg.order.map(id => ({ id, name: reg.names[id] || 'Player' })),
+      activeProfile: reg.active, marks
+    });
     fetch('data/dex.json').then(r => r.json())
-      .then(all => this.setState({ all, loaded: true, marks }))
-      .catch(() => this.setState({ loaded: true, marks }));
+      .then(all => this.setState({ all, loaded: true }))
+      .catch(() => this.setState({ loaded: true }));
+  }
+
+  switchProfile(id) {
+    const reg = this.loadRegistry() || { order: [id], names: {}, active: id };
+    reg.active = id;
+    this.saveRegistry(reg);
+    this.setState({ activeProfile: id, marks: this.loadMarksFor(id), profileMenuOpen: false, selected: {}, selectMode: false, detailPid: null });
+  }
+
+  addProfile() {
+    const name = (typeof prompt === 'function' ? prompt('Profile name') : '').trim();
+    if (!name) return;
+    const reg = this.loadRegistry() || { order: [], names: {}, active: null };
+    const id = uid();
+    reg.order.push(id); reg.names[id] = name; reg.active = id;
+    this.saveRegistry(reg);
+    this.setState({
+      profiles: reg.order.map(pid => ({ id: pid, name: reg.names[pid] || 'Player' })),
+      activeProfile: id, marks: {}, profileMenuOpen: false, selected: {}, selectMode: false
+    });
+  }
+
+  renameProfile(id) {
+    const reg = this.loadRegistry(); if (!reg) return;
+    const name = (typeof prompt === 'function' ? prompt('Rename profile', reg.names[id] || '') : '').trim();
+    if (!name) return;
+    reg.names[id] = name;
+    this.saveRegistry(reg);
+    this.setState({ profiles: reg.order.map(pid => ({ id: pid, name: reg.names[pid] || 'Player' })) });
+  }
+
+  deleteProfile(id) {
+    const reg = this.loadRegistry(); if (!reg || reg.order.length <= 1) return;
+    if (!(typeof confirm === 'function' ? confirm(`Delete profile "${reg.names[id]}"? This removes its saved checklist.`) : true)) return;
+    reg.order = reg.order.filter(pid => pid !== id);
+    delete reg.names[id];
+    try { localStorage.removeItem(this.profileKey(id)); } catch (e) {}
+    const switching = reg.active === id;
+    if (switching) reg.active = reg.order[0];
+    this.saveRegistry(reg);
+    this.setState({
+      profiles: reg.order.map(pid => ({ id: pid, name: reg.names[pid] || 'Player' })),
+      activeProfile: reg.active,
+      marks: switching ? this.loadMarksFor(reg.active) : this.state.marks
+    });
   }
 
   get active() { return LISTS.find(l => l.id === this.state.list) || LISTS[0]; }
 
   save(marks) {
     this.setState({ marks });
-    try { localStorage.setItem(KEY, JSON.stringify(marks)); } catch (e) {}
+    if (!this.state.activeProfile) return;
+    try { localStorage.setItem(this.profileKey(this.state.activeProfile), JSON.stringify(marks)); } catch (e) {}
+  }
+
+  toggleSelect(pid) {
+    const sel = { ...this.state.selected };
+    if (sel[pid]) delete sel[pid]; else sel[pid] = true;
+    this.setState({ selected: sel });
+  }
+
+  applyToSelection(on) {
+    const marks = { ...this.state.marks };
+    const bit = this.active.bit;
+    Object.keys(this.state.selected).forEach(pid => {
+      const cur = marks[pid] || 0;
+      const next = on ? (cur | bit) : (cur & ~bit);
+      if (next) marks[pid] = next; else delete marks[pid];
+    });
+    this.save(marks);
+    this.setState({ selected: {} });
   }
 
   bit(pid, b) {
@@ -271,7 +429,11 @@ class Component extends DCLogic {
       if (f.costume === 'exclude' && pm.c) return false;
       if (f.baby === 'only' && !pm.b) return false;
       if (f.forms.length && !f.forms.includes(pm.f)) return false;
-      if (f.gens.length && !f.gens.includes(pm.g)) return false;
+      if (f.gens.length) {
+        if (!f.gens.includes(pm.g)) return false;
+        const wantsExtra = f.forms.length > 0 || f.costume === 'only';
+        if (!wantsExtra && (pm.f || pm.c)) return false;
+      }
       if (f.types.length && !pm.t.some(t => f.types.includes(t))) return false;
       return true;
     });
@@ -287,7 +449,7 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { all, marks, f, list, tapMarks, limit, sort, query, showStats, filtersOpen, detailPid, broken, searchOpen } = this.state;
+    const { all, marks, f, list, tapMarks, limit, sort, query, showStats, filtersOpen, detailPid, broken, searchOpen, profiles, activeProfile, profileMenuOpen, selectMode, selected } = this.state;
     const searchWide = searchOpen || !!query;
     const accent = this.props.accent || '#4cc9f0';
     const A = this.active;
@@ -305,24 +467,32 @@ class Component extends DCLogic {
         : pm.f ? ((SHORT[pm.f] || pm.f) + (pm.sf ? ' ' + pm.sf : ' form'))
         : (pm.sf || '');
       const others = LISTS.filter(l => l.id !== A.id && (m & l.bit));
-      return {
+      const item = {
         key: pm.p, name: pm.n, variant: variant || '\u00a0',
+        dexNum: String(pm.d).padStart(4, '0'), region: REGIONS[pm.g - 1] || '',
         title: `#${pm.d} ${pm.n}${variant ? ' · ' + variant : ''}${pm.dt ? '\n@' + pm.dt : ''}`,
         src: broken[pm.p] ? `${CDN}pm${pm.d}.icon.png` : this.spriteUrl(pm),
         onError: e => { if (!broken[pm.p]) this.setState({ broken: { ...broken, [pm.p]: 1 } }); else e.target.style.opacity = '.12'; },
         imgFilter: pm.r ? 'none' : 'grayscale(1)',
         spriteBox: `position:relative;width:100%;aspect-ratio:1;border-radius:9px;padding:5%;background:radial-gradient(circle at 34% 26%, ${c}2e, ${c2}0d 72%);border:1px solid ${c}2b`,
         variantStyle: `font-size:9px;line-height:1.2;color:${pm.c ? '#c98fd6' : pm.f ? '#8fa8dd' : variant ? '#8b95a8' : '#3a4150'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500`,
-        cardStyle: `display:flex;flex-direction:column;gap:5px;padding:6px;border-radius:12px;cursor:pointer;transition:.12s;background:${on ? A.col + '16' : '#10151f'};border:1px solid ${on ? A.col + '66' : '#1b2130'};opacity:${pm.r ? 1 : .55}`,
-        markGlyph: A.glyph,
-        markStyle: `position:absolute;top:3px;right:3px;min-width:15px;height:15px;padding:0 3px;border-radius:5px;font-size:9px;font-weight:700;display:${on ? 'flex' : 'none'};align-items:center;justify-content:center;background:${A.col};color:#0b0d12;font-family:'JetBrains Mono',monospace`,
+        cardStyle: `display:flex;flex-direction:column;gap:5px;padding:6px;border-radius:12px;cursor:pointer;transition:.12s;background:${on ? A.col + '1c' : '#10151f'};border:1px solid ${on ? A.col + '77' : '#1b2130'};box-shadow:${on ? `0 0 0 1px ${A.col}22` : 'none'};opacity:${pm.r ? 1 : .55}`,
+        markGlyph: ICONS[A.id] ? '' : A.glyph,
+        markStyle: ICONS[A.id]
+          ? `position:absolute;top:2px;right:2px;width:17px;height:17px;border-radius:50%;display:${on ? 'block' : 'none'};background-color:${A.col};background-image:url("${ICONS[A.id]}");background-size:${A.id === 'shiny' ? '100%' : '62%'};background-repeat:no-repeat;background-position:center;box-shadow:0 1px 3px rgba(0,0,0,.5)`
+          : `position:absolute;top:3px;right:3px;min-width:15px;height:15px;padding:0 3px;border-radius:5px;font-size:9px;font-weight:700;display:${on ? 'flex' : 'none'};align-items:center;justify-content:center;background:${A.col};color:#0b0d12;font-family:'JetBrains Mono',monospace`,
         dots: others.map(l => l.glyph).join(''),
         dotsStyle: `position:absolute;bottom:2px;right:4px;font-size:8px;letter-spacing:1px;color:#6d7789;display:${others.length ? 'block' : 'none'}`,
         onClick: () => {
+          if (selectMode) return this.toggleSelect(pm.p);
           if (tapMarks) this.bit(pm.p, A.bit);
           else this.setState({ detailPid: pm.p });
         }
       };
+      if (selectMode && selected[pm.p]) {
+        item.cardStyle = `display:flex;flex-direction:column;gap:5px;padding:5px;border-radius:12px;cursor:pointer;transition:.12s;background:#f5c54214;border:2px solid #f5c542;box-shadow:0 0 0 1px #f5c542aa;opacity:${pm.r ? 1 : .55}`;
+      }
+      return item;
     });
 
     const have = scoped.filter(p => marks[p.p] & A.bit).length;
@@ -332,8 +502,10 @@ class Component extends DCLogic {
 
     const lists = LISTS.map(l => {
       const on = l.id === list;
+      const ic = ICONS[l.id];
       return { label: l.label, onClick: () => this.setState({ list: l.id, limit: 240, detailPid: null }),
-        style: `flex:none;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s;border:1px solid ${on ? l.col : '#242c3c'};background:${on ? l.col + '26' : '#131822'};color:${on ? l.col : '#8b95a8'}` };
+        iconStyle: ic ? `display:inline-block;width:13px;height:13px;border-radius:50%;background-color:${on ? l.col : '#3a4356'};background-image:url("${ic}");background-size:70%;background-repeat:no-repeat;background-position:center;margin-right:5px;vertical-align:-2px` : 'display:none',
+        style: `flex:none;display:flex;align-items:center;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.12s;border:1px solid ${on ? l.col : '#242c3c'};background:${on ? l.col + '26' : '#131822'};color:${on ? l.col : '#8b95a8'}` };
     });
 
     const stats = LISTS.filter(l => ['pokemon','shiny','lucky'].includes(l.id)).map(l => {
@@ -361,7 +533,7 @@ class Component extends DCLogic {
         this.chip('No costume', f.costume === 'exclude', () => this.tri('costume','exclude'), '#ec8fe6'),
         this.chip('Baby', f.baby === 'only', () => this.tri('baby','only'), '#73cec0')
       ] },
-      { label: 'Gen', chips: [1,2,3,4,5,6,7,8,9].map(g => this.chip('G' + g, f.gens.includes(g), () => this.cycleList('gens', g), '#9aa5b8')) },
+      { label: 'Region', chips: REGIONS.map((name, i) => this.chip(name, f.gens.includes(i + 1), () => this.cycleList('gens', i + 1), '#9aa5b8')) },
       { label: 'Type', chips: Object.keys(TYPE_COLORS).map(t => this.chip(t, f.types.includes(t), () => this.cycleList('types', t), TYPE_COLORS[t])) }
     ];
 
@@ -369,21 +541,48 @@ class Component extends DCLogic {
     let detail = null;
     if (dpm) {
       const m = marks[dpm.p] || 0;
-      const c = TYPE_COLORS[dpm.t[0]] || '#5a6478';
+      const spriteFor = pm => broken[pm.p] ? `${CDN}pm${pm.d}.icon.png` : this.spriteUrl(pm);
+      const tileGrid = LISTS.filter(l => ['shiny','hundo','lucky','xxl','xxs','shadow','purified'].includes(l.id));
+      const siblings = all.filter(p => p.d === dpm.d && p.p !== dpm.p && p.r);
       detail = {
-        name: dpm.n, dexLabel: '#' + String(dpm.d).padStart(4, '0'),
-        spriteBox: `width:72px;height:72px;flex:none;border-radius:12px;border:1px solid ${c}33;background-color:${c}14;background-image:url("${broken[dpm.p] ? `${CDN}pm${dpm.d}.icon.png` : this.spriteUrl(dpm)}");background-size:64px 64px;background-repeat:no-repeat;background-position:center`,
-        meta: [dpm.f, dpm.c || dpm.sf, 'Gen ' + dpm.g, dpm.t.join(' / ')].filter(Boolean).join(' · '),
+        name: dpm.n, nameUpper: dpm.n.toUpperCase(), dexLabel: '#' + String(dpm.d).padStart(4, '0'),
+        spriteBox: `width:96px;height:96px;margin:0 auto 8px;background-image:url("${spriteFor(dpm)}");background-size:88px 88px;background-repeat:no-repeat;background-position:center;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2))`,
+        typePills: dpm.t.map(t => ({ label: t, style: `background:${TYPE_COLORS[t]}dd;color:#fff;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border-radius:99px` })),
         debutLine: dpm.r ? 'Shiny released ' + dpm.dt : 'Shiny not released in game yet',
-        toggles: LISTS.map(l => ({
-          label: l.label, onClick: () => this.bit(dpm.p, l.bit),
-          style: `border-radius:9px;padding:10px 6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${(m & l.bit) ? l.col : '#262e40'};background:${(m & l.bit) ? l.col + '22' : '#161c28'};color:${(m & l.bit) ? l.col : '#8b95a8'}`
+        grid: tileGrid.map(l => {
+          const on = !!(m & l.bit);
+          const ic = ICONS[l.id];
+          return {
+            glyph: ic ? '' : l.glyph, label: l.label, onClick: () => this.bit(dpm.p, l.bit),
+            tileStyle: `display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:12px;cursor:pointer;background:#fff6df;border:2px solid ${on ? l.col : 'transparent'};box-shadow:${on ? `0 0 0 1px ${l.col}` : 'none'}`,
+            glyphStyle: ic
+              ? `width:20px;height:20px;background-color:${l.id === 'shiny' ? 'transparent' : (on ? l.col : '#c2a878')};background-image:url("${ic}");background-size:${l.id === 'shiny' ? '100%' : '64%'};background-repeat:no-repeat;background-position:center;border-radius:50%;opacity:${on ? 1 : .5}`
+              : `font-size:15px;font-weight:700;color:${on ? l.col : '#c2a878'};font-family:'JetBrains Mono',monospace`,
+            labelStyle: `font-size:8.5px;font-weight:700;letter-spacing:.03em;color:#7a6135`
+          };
+        }),
+        hasSiblings: siblings.length > 0, siblingLabel: 'Forms & Costumes',
+        siblings: siblings.map(p => ({
+          onClick: () => this.setState({ detailPid: p.p }),
+          tileStyle: `aspect-ratio:1;border-radius:10px;background:#fff6df url("${spriteFor(p)}") center/78% no-repeat;border:1px solid #e2c98c;cursor:pointer`
         }))
       };
     }
 
+    const groups = [];
+    if (sort === 'dex') {
+      let cur = null;
+      for (const it of items) {
+        if (!cur || cur.region !== it.region) { cur = { region: it.region, showHeader: !!it.region, items: [] }; groups.push(cur); }
+        cur.items.push(it);
+      }
+    } else {
+      groups.push({ region: '', showHeader: false, items });
+    }
+
     return {
-      items, stats, lists, chipRows, detail, sort, query, showStats, filtersOpen,
+      items, groups, stats, lists, chipRows, detail, sort, query, showStats, filtersOpen,
+      guideHref: this.props.guideHref ?? 'Guide.dc.html',
       tabsWrapStyle: `display:${searchWide ? 'none' : 'flex'};align-items:center;gap:8px;flex:1;min-width:0`,
       searchWrapStyle: `display:${searchWide ? 'flex' : 'none'};position:relative;align-items:center;flex:1;min-width:0`,
       searchIconStyle: `display:${searchWide ? 'none' : 'flex'};align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:8px;font-size:15px;cursor:pointer;border:1px solid #232a3a;background:#131822;color:#9aa5b8`,
@@ -397,6 +596,7 @@ class Component extends DCLogic {
       clearQuery: () => this.setState({ query: '', searchOpen: false, limit: 240 }),
       gridCols: `repeat(auto-fill, minmax(${size}px, 1fr))`,
       activeBarStyle: bar(pct(have, total), A.col),
+      headerTintStyle: `background:radial-gradient(ellipse 120% 100% at 50% -20%, ${A.col}26, transparent 65%), rgba(11,13,18,.94)`,
       headerLine: this.state.loaded ? `${have} / ${total} · ${pct(have, total)}%` : 'loading…',
       resultLine: `${result.length} shown`,
       filterBtnLabel: activeFilters ? `Filters ${activeFilters}` : 'Filters',
@@ -404,6 +604,33 @@ class Component extends DCLogic {
       tapBtnLabel: tapMarks ? 'Tap: mark' : 'Tap: info',
       tapBtnStyle: `flex:none;height:36px;padding:0 11px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ${tapMarks ? A.col : '#232a3a'};background:${tapMarks ? A.col + '22' : '#131822'};color:${tapMarks ? A.col : '#9aa5b8'}`,
       toggleTap: () => this.setState({ tapMarks: !tapMarks }),
+      selectMode, selectedCount: Object.keys(selected).length, activeLabel: A.label,
+      selectBtnLabel: selectMode ? `Select ✓` : 'Select',
+      selectBtnStyle: `flex:none;height:32px;padding:0 11px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ${selectMode ? '#f5c542' : '#232a3a'};background:${selectMode ? '#f5c54222' : '#151a25'};color:${selectMode ? '#f5c542' : '#9aa5b8'}`,
+      toggleSelectMode: () => this.setState({ selectMode: !selectMode, selected: {} }),
+      markSelectedStyle: `background:${A.col}22;border:1px solid ${A.col};color:${A.col};border-radius:8px;padding:8px 12px;font-size:11.5px;font-weight:700;cursor:pointer`,
+      markSelected: () => this.applyToSelection(true),
+      unmarkSelected: () => this.applyToSelection(false),
+      clearSelection: () => this.setState({ selected: {} }),
+      selectAllLabel: `Select all (${result.length})`,
+      selectAllFiltered: () => this.setState({ selected: Object.fromEntries(result.map(pm => [pm.p, true])) }),
+      profiles: profiles.map(pf => {
+        const idx = profiles.findIndex(p => p.id === pf.id);
+        const col = PROFILE_COLORS[idx % PROFILE_COLORS.length];
+        const on = pf.id === activeProfile;
+        return {
+          label: pf.name, color: on ? col : '#c7d0e0',
+          rowStyle: `display:flex;align-items:center;gap:2px;border-radius:7px;background:${on ? col + '14' : 'transparent'}`,
+          onSelect: () => this.switchProfile(pf.id),
+          onRename: () => this.renameProfile(pf.id),
+          onDelete: () => this.deleteProfile(pf.id),
+          deleteStyle: `flex:none;background:none;border:none;color:#5f6878;font-size:11px;cursor:pointer;padding:4px 6px;display:${profiles.length > 1 ? 'block' : 'none'}`
+        };
+      }),
+      profileLabel: (profiles.find(p => p.id === activeProfile) || {}).name || '…',
+      profileDotStyle: `width:6px;height:6px;border-radius:50%;background:${PROFILE_COLORS[Math.max(0, profiles.findIndex(p => p.id === activeProfile)) % PROFILE_COLORS.length]}`,
+      profileMenuOpen, toggleProfileMenu: () => this.setState({ profileMenuOpen: !profileMenuOpen }),
+      addProfile: () => this.addProfile(),
       toggleFilters: () => this.setState({ filtersOpen: !filtersOpen }),
       toggleStats: () => this.setState({ showStats: !showStats }),
       hasMore: result.length > limit, isEmpty: this.state.loaded && result.length === 0,
