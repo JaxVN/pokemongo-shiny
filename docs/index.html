@@ -165,6 +165,8 @@
 
   <div style="display:flex;gap:8px;justify-content:center;padding:32px 16px 8px;flex-wrap:wrap">
     <button onClick="{{ doExport }}" style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#e8ecf4;border-color:#3a4356">Export JSON</button>
+    <button onClick="{{ doExportSheet }}" style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#e8ecf4;border-color:#3a4356">Export CSV</button>
+    <button onClick="{{ doExportDexjourney }}" style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#e8ecf4;border-color:#3a4356">Export CSV (DexJourney)</button>
     <label style="background:#131822;border:1px solid #232a3a;color:#9aa5b8;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer">Import JSON<input type="file" accept=".json" onChange="{{ doImport }}" style="display:none"></label>
     <button onClick="{{ doReset }}" style="background:none;border:1px solid #2a1b22;color:#7d5a66;border-radius:9px;padding:9px 14px;font-size:11px;font-weight:600;cursor:pointer" style-hover="color:#f0455a;border-color:#5a2733">Reset progress</button>
   </div>
@@ -247,6 +249,82 @@ const LISTS = [
   { id:'purified', label:'Purified', bit:256, glyph:'✧', col:'#73cec0', scope:'base', shinySprite:false },
   { id:'hundo',    label:'*100%',    bit:512, glyph:'%', col:'#ff9d55', scope:'base', shinySprite:false }
 ];
+
+// CSV export. Two shapes, because the two destinations want different things:
+// a wide sheet keeps one row per dex entry (every form and costume survives),
+// while DexJourney wants one row per species with forms folded into
+// variants_json under their catalog keys -- see data/dexjourney-map.json.
+const DJ_MAP_URL = 'data/dexjourney-map.json';
+const VARIANT_FLAGS = [['owned',1], ['shiny',2], ['lucky',4], ['xxl',8], ['xxs',16], ['shadow',128], ['purified',256], ['perfect',512]];
+
+function csvCell(v) {
+  const s = v === null || v === undefined ? '' : String(v);
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function csvText(rows) {
+  // BOM so Excel reads accented names (Flabébé, Farfetch'd) as UTF-8
+  const BOM = String.fromCharCode(0xFEFF);
+  return BOM + rows.map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+}
+function saveBlob(name, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function sheetCsv(all, marks) {
+  // 'hundo' reads as 'perfect' here so the column matches what DexJourney calls it
+  const rows = [['dex','name','form','costume','suffix','gen','shiny_released','debut','pid',
+    ...LISTS.map(l => l.id === 'hundo' ? 'perfect' : l.id)]];
+  for (const e of all) {
+    const m = marks[e.p] || 0;
+    rows.push([e.d, e.n, e.f || '', e.c || '', e.sf || '', e.g, e.r ? 'TRUE' : 'FALSE', e.dt || '', e.p,
+      ...LISTS.map(l => (m & l.bit) ? 'TRUE' : 'FALSE')]);
+  }
+  return csvText(rows);
+}
+
+function dexjourneyCsv(all, marks, map) {
+  const species = new Map();
+  const pick = d => {
+    let sp = species.get(d);
+    if (!sp) { sp = { name: '', mask: 0, mega: false, gmax: false, variants: new Map() }; species.set(d, sp); }
+    return sp;
+  };
+  // Only marked entries are emitted, so importing in Merge mode never clears
+  // anything already tracked on the DexJourney side.
+  for (const e of all) {
+    const m = marks[e.p] || 0;
+    if (!m) continue;
+    const slot = map[e.p];
+    const sp = pick(e.d);
+    if (!slot) sp.mask |= m;                                  // the species row itself
+    else if (slot === 'mega') sp.mega = sp.mega || !!(m & 65); // Pokémon or MEGA bit
+    else if (slot === 'gmax') sp.gmax = sp.gmax || !!(m & 33); // Pokémon or G-MAX bit
+    else sp.variants.set(slot, (sp.variants.get(slot) || 0) | m);
+  }
+  for (const e of all) {                                       // name every emitted row
+    const sp = species.get(e.d);
+    if (sp && !sp.name && !map[e.p]) sp.name = e.n;
+  }
+  const rows = [['dex_id','name','owned','shiny','lucky','xxl','xxs','mega','gmax','shadow','purified','perfect','variants_json']];
+  for (const d of [...species.keys()].sort((a, b) => a - b)) {
+    const sp = species.get(d);
+    const variants = [...sp.variants.entries()].map(([key, vm]) => {
+      const o = { key };
+      for (const [col, bit] of VARIANT_FLAGS) if (vm & bit) o[col] = true;
+      return o;
+    });
+    const f = bit => (sp.mask & bit) ? 'true' : 'false';
+    rows.push([d, sp.name, f(1), f(2), f(4), f(8), f(16),
+      sp.mega ? 'true' : 'false', sp.gmax ? 'true' : 'false',
+      f(128), f(256), f(512), variants.length ? JSON.stringify(variants) : '[]']);
+  }
+  return csvText(rows);
+}
 
 class Component extends DCLogic {
   state = {
@@ -647,6 +725,12 @@ class Component extends DCLogic {
         a.href = URL.createObjectURL(blob);
         a.download = 'shiny-lucky-dex.json';
         a.click();
+      },
+      doExportSheet: () => saveBlob('shiny-lucky-dex.csv', sheetCsv(all, marks), 'text/csv;charset=utf-8'),
+      doExportDexjourney: () => {
+        fetch(DJ_MAP_URL).then(r => r.json())
+          .then(map => saveBlob('shiny-lucky-dex-dexjourney.csv', dexjourneyCsv(all, marks, map), 'text/csv;charset=utf-8'))
+          .catch(() => alert('Could not load ' + DJ_MAP_URL + ' - DexJourney CSV not written.'));
       },
       doImport: e => {
         const file = e.target.files && e.target.files[0];
